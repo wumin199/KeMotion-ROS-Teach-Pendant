@@ -1,0 +1,10 @@
+rmi_driver:
+  publish_rate: 30
+rmi_driver_map:
+  - connection: 1    
+    ns: "rtp_node"
+    ip_address: "192.168.101.100"
+    port: 30000
+    rmi_plugin_package: "keba_rmi_plugin"
+    rmi_plugin_lookup_name: "keba_rmi_plugin::KebaCommandRegister"
+    joints: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6]

@@ -1,0 +1,5 @@
+<launch>
+<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+  <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam>
+</node>
+</launch>

@@ -1,0 +1,5 @@
+*~
+*.user
+.pyc
+
+CATKIN_IGNORE

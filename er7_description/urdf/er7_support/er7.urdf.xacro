@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+
+<robot name="er7" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find er7_description)/urdf/er7_support/er7.xacro"/>
+  <xacro:er7 prefix=""/>
+</robot>

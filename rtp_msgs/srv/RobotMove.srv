@@ -1,0 +1,4 @@
+rtp_msgs/RobotMoveCommands cmd
+---
+bool success
+string message

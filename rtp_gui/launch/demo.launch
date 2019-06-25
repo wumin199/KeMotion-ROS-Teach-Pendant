@@ -1,0 +1,6 @@
+<launch>
+
+  <node name="rtp_gui_node" pkg="rtp_gui" type="rtp_gui_node" output="screen" />
+  <node name="rtp_node" pkg="rtp_gui" type="rtp_node" output="screen" />
+
+</launch>

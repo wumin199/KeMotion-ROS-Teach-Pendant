@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: er7_description
+    relative_path: urdf/er7_support/er7.urdf.xacro
+    xacro_args: "--inorder "
+  SRDF:
+    relative_path: config/er7.srdf
+  CONFIG:
+    author_name: wumin199
+    author_email: wumin199@126.com
+    generated_timestamp: 1552626346
