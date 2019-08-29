@@ -21,20 +21,24 @@ MainWindow::MainWindow(QWidget *parent) :
   initPointList();
   show_point_position(1);
 
-  chatter_pub = local_gui_node_.advertise<std_msgs::String>("chatter",1000);//test
-
   joint_teleop_client_ = local_gui_node_.serviceClient<rtp_msgs::SetInt16>("joint_teleop");
   cart_teleop_client_ = local_gui_node_.serviceClient<rtp_msgs::SetInt16>("cart_teleop");
   home_teleop_client_ = local_gui_node_.serviceClient<std_srvs::SetBool>("home_teleop");
   stop_teleop_client_ = local_gui_node_.serviceClient<std_srvs::SetBool>("stop_teleop");
   mode_teleop_client_ = local_gui_node_.serviceClient<std_srvs::SetBool>("mode_teleop");
+
   //move_client_ = local_gui_node_.serviceClient<std::vector<rtp_msgs::RobotMoveCommand>>("move_teleop");
   move_client_ = local_gui_node_.serviceClient<rtp_msgs::RobotMove>("move_teleop");
   dynamic_reconfigure_client_ =
       new dynamic_reconfigure::Client<rtp_gui::RtpDynamicReconfigureConfig>("rtp_node/");
 
-  test_client_ = local_gui_node_.serviceClient<std_srvs::SetBool>("moveit_test");
+  move_voice_control_client_ = local_gui_node_.serviceClient<rtp_msgs::SetInt16>("move_voice_control");
+  voice_control_client_ = local_gui_node_.serviceClient<std_srvs::SetBool>("voice_control");
+  speech_sub_ = local_gui_node_.subscribe("speech_status", 1000, &MainWindow::speech_status, this);
+
   ros_timer_ = local_gui_node_.createTimer(ros::Duration(0.1), boost::bind(&MainWindow::ros_timer_callback, this));
+
+
 }
 
 void MainWindow::initQtConnection()
@@ -74,6 +78,11 @@ void MainWindow::initQtConnection()
   button_mode_group_->addButton(ui->rb_bringup, 2);
   this->connect(ui->rb_simulation, &QRadioButton::clicked, this, &MainWindow::refresh_mode);
   this->connect(ui->rb_bringup, &QRadioButton::clicked, this, &MainWindow::refresh_mode);
+
+  //this->connect(ui->button_voice_control_start, &QPushButton::clicked, this, &MainWindow::start_voice_control);
+  //this->connect(ui->button_voice_control_stop, &QPushButton::clicked, this, &MainWindow::stop_voice_control);
+  this->connect(ui->button_voice_control, &QPushButton::pressed, this, &MainWindow::start_voice_control);
+  this->connect(ui->button_voice_control, &QPushButton::released, this, &MainWindow::stop_voice_control);
 }
 
 void MainWindow::initGui()
@@ -715,4 +724,138 @@ void MainWindow::refresh_mode()
       ROS_INFO("simulation mode setting failed");
     }
   }
+}
+
+void MainWindow::start_voice_control()
+{
+  std_srvs::SetBool srv;
+  srv.request.data = true;
+  if (!voice_control_client_.call(srv))
+  {
+    ui->lineedit_echo_words->setText("voice control start request failed");
+  }
+  else
+  {
+    //record_button_pressed = std::chrono::system_clock::now();
+    //bflag = true;
+    //record_thread_ = std::thread(&MainWindow::record_thread, this);
+    //record_thread_.detach();
+    ui->lineedit_echo_words->setText("recording...");
+  }
+}
+
+void MainWindow::stop_voice_control()
+{
+  std_srvs::SetBool srv;
+  srv.request.data = false;
+
+  if (!voice_control_client_.call(srv))
+  {
+    ui->lineedit_echo_words->setText("voice control stop request failed");
+  }
+  //record_button_released = std::chrono::system_clock::now();
+  //bflag = false;
+  ui->lineedit_echo_words->setText("recording completed");
+}
+
+void MainWindow::record_thread()
+{
+  ros::Rate loop_rate(10);
+  while (ros::ok() && bflag)
+  {
+    ROS_INFO("test");
+    loop_rate.sleep();
+  }
+
+  ROS_INFO("break");
+
+}
+
+void MainWindow::speech_status(const std_msgs::String::ConstPtr &msg)
+{
+  QString data = QString::fromStdString(msg->data);
+  ui->lineedit_echo_words->setText(data);
+  ROS_INFO("speech data is [%s]", msg->data.c_str());
+
+  bool rst = false;
+
+  short request_data = 0;
+  rtp_msgs::SetInt16 srv;
+
+  //parse Chinese speech data
+
+
+  //parse English speech data
+  if (data.length() < 3 || data.length() > 15)
+  {
+    ROS_INFO("data length [%d]", data.length());
+    return;
+  }
+  rst = (data.contains("up.",Qt::CaseInsensitive) || data.contains("上", Qt::CaseInsensitive));
+  if (rst)
+  {
+    ROS_INFO("move up");
+    request_data = 1;
+  }
+
+  rst = (data.contains("down.",Qt::CaseInsensitive) || data.contains("下", Qt::CaseInsensitive));
+  if (rst)
+  {
+    ROS_INFO("move down");
+    request_data = 2;
+  }
+
+  rst = (data.contains("left.",Qt::CaseInsensitive) || data.contains("左", Qt::CaseInsensitive));
+  if (rst)
+  {
+    ROS_INFO("move left");
+    request_data = 3;
+  }
+
+  rst = (data.contains("right.",Qt::CaseInsensitive) || data.contains("右", Qt::CaseInsensitive));
+  if (rst)
+  {
+    ROS_INFO("move right");
+    request_data = 4;
+  }
+
+  rst = (data.contains("forward.",Qt::CaseInsensitive) || data.contains("前", Qt::CaseInsensitive));
+  if (rst)
+  {
+    ROS_INFO("move forward");
+    request_data = 5;
+  }
+
+  rst = (data.contains("backward.",Qt::CaseInsensitive) || data.contains("后", Qt::CaseInsensitive));
+  if (rst)
+  {
+    ROS_INFO("move backward");
+    request_data = 6;
+  }
+
+  rst = (data.contains("stop.",Qt::CaseInsensitive) || data.contains("停止", Qt::CaseInsensitive));
+  if (rst)
+  {
+    ROS_INFO("robot stop");
+    request_data = 7;
+  }
+
+  rst = (data.contains("point.",Qt::CaseInsensitive) || data.contains("测试", Qt::CaseInsensitive)); //test point
+  if (rst)
+  {
+    ROS_INFO("move to test point");
+    request_data = 8;
+  }
+
+  if (request_data == 0)
+    return;
+
+
+  //connect to server
+  srv.request.data = request_data;
+  if (!move_voice_control_client_.call(srv))
+  {
+    ROS_INFO("request failed");
+  }
+
 }

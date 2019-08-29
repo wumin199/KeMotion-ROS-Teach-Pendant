@@ -1,0 +1,8 @@
+<launch>
+
+  <node name="arm_voice_control" pkg="voice_control" type="arm_voice_control" output="screen">
+    <param name="language" type="string" value="zh_cn" />
+    <!-- <param name="language" type="string" value="en_us"/> -->
+  </node>
+
+</launch>

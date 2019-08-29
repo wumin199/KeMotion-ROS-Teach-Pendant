@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="Drag">
      <attribute name="title">
@@ -1793,6 +1793,76 @@
         <string/>
        </property>
       </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="VoiceControl">
+     <attribute name="title">
+      <string>VoiceControl</string>
+     </attribute>
+     <widget class="QPushButton" name="button_voice_control_start">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>90</y>
+        <width>121</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Start</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_43">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>180</y>
+        <width>131</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Recording Status:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineedit_echo_words">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>210</y>
+        <width>441</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="button_voice_control_stop">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>90</y>
+        <width>121</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Stop</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="button_voice_control">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>30</y>
+        <width>261</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Record</string>
+      </property>
      </widget>
     </widget>
    </widget>

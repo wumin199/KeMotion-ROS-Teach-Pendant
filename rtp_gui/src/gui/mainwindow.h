@@ -119,6 +119,18 @@ private slots:
    */
   void on_button_execute_clicked();
 
+  /**
+   * @brief start voice control
+   * speech recognizer starts working
+   */
+  void start_voice_control();
+
+  /**
+   * @brief stop voice control
+   * speech recognizer stops working
+   */
+  void stop_voice_control();
+
 private:
 
   /**
@@ -138,6 +150,17 @@ private:
    */
   void show_point_position(int point_id);
 
+  /**
+   * @brief record thread
+   */
+  void record_thread();
+
+  /**
+   * @brief display voice recognition results
+   * @param msg
+   */
+  void speech_status(const std_msgs::String::ConstPtr &msg);
+
 private:
 
   Ui::MainWindow *ui;
@@ -149,14 +172,16 @@ private:
   ros::ServiceClient stop_teleop_client_;
   ros::ServiceClient move_client_;//continous move : lin -> ptp -> lin
   ros::ServiceClient mode_teleop_client_;
-  ros::ServiceClient test_client_;
+  ros::ServiceClient voice_control_client_;//start speech recording
+  ros::ServiceClient move_voice_control_client_;//start moving according to speech recognition result
 
   //pubs and subs
-  ros::Publisher chatter_pub;//test
+  //ros::Publisher voice_control_pub_;//voice control
   ros::Subscriber enable_robot_sub;
   ros::Subscriber fault_robot_sub;
   ros::Subscriber end_link_name_sub;
   ros::Subscriber reference_link_sub;
+  ros::Subscriber speech_sub_;//get speech recognition result
 
   //timer used to update ui
   ros::Timer ros_timer_;
@@ -183,6 +208,11 @@ private:
   //time point used to prevent button release too quickly
   std::chrono::system_clock::time_point time_button_pressed;
   std::chrono::system_clock::time_point time_button_released;
+  std::chrono::system_clock::time_point record_button_pressed;
+  std::chrono::system_clock::time_point record_button_released;
+
+  bool bflag = false;
+  std::thread record_thread_;
 };
 
 #endif // MAINWINDOW_H

@@ -27,17 +27,31 @@ KeMotion-ROS Teach Pendant
 |[robot_movement_interface](https://github.com/ros-industrial/robot_movement_interface)|-|
 
 
-安装和升级**MoveIt!**，方法：
+1. 安装和升级**MoveIt!**，方法：
 
 ```sh
 sudo apt-get update
 sudo apt-get install ros-kinetic-moveit*
 ```
 
-安装依赖包**TrackIK**，方法：
+2. 安装依赖包**TrackIK**，方法：
 
 ```sh
 sudo apt-get install ros-kinetic-trac-ik-kinematics-plugin
+```
+
+3. 按照语音控制相关依赖包，方法：
+
+根据Linux架构，将`/voice_control/libs/`下的`libmsc.so`复制到系统目录下
+
+```sh
+sudo cp libmsc.so /usr/lib/libmsc.so
+```
+
+同时安装语音控制的其他依赖：
+
+```sh
+sudo apt-get install libasound2
 ```
 
 
@@ -82,6 +96,11 @@ source devel/setup.bash
 2. 下载控制器工程和示教器模板程序
 3. 使示教器处于外部模式，按`F1`加载并启动示教器程序(`F2`是停止并卸载示教器程序）
 
+如果需要语音控制，请执行：
+
+1. 启动语音控制：`roslaunch voice_control demo.launch`
+
+说明：默认是英文语音识别，需要切换到中文识别的话，请在`demo.launch`中取消相关注释项。
 
 
 
@@ -133,6 +152,32 @@ source devel/setup.bash
 
 遇到这个问题，目前只能关闭程序后再重启。
 
+- 语音控制
+
+如果该demo跑在虚拟机上，则需要给虚拟机启用声音输入功能，同时在说话的时候，需要保证音量足够。识别效率取决于科大讯飞语音包能力。
+
+
+
+
+使用方法为:
+
+先语音唤醒: "hello robot"
+如果唤醒成功，界面会提醒唤醒成功。之后必须在10s内用语音下发命令。下发成功则执行对应的命令，并有对应的提示。如果15s内因为各种原因（声音太小、发音不清楚，噪音太大等）造成的识别错误，均会造成本次语音控制失败，需要重新语音唤醒。
+
+目前支持的语音命令如下：
+
+| 语音| 说明 |
+| :------ | :------ |
+|robot test point/运动到测试点|机器人走到测试点位(方便测试用)|
+|move up/向上运动||
+|move down/向下运动||
+|move left/向左运动||
+|move right/向右运动||
+|move forward/向前运动||
+|move backward/向后运动||
+|robot stop/停止运动||
+
+
 ## rmi_driver简单说明
 
 该demo的bring up模式是基于keba的[rmi_driver](https://github.com/smith-doug/rmi_driver)进行的。
@@ -147,3 +192,14 @@ source devel/setup.bash
 关于该话题的详细信息，可以参考[robot_movement_interface](https://github.com/ros-industrial/robot_movement_interface)
 
 即用户只要将自己想要执行的点位信息转换为`robot_movement_interface::CommandList`类型的数据并发布到`command_list`话题上，则`rmi_driver`会接受到该话题，并进行转发处理，使得真实的机器人控制器执行下发的命令并周期性反馈执行情况。
+
+## 语音控制说明
+
+1. 语音控制中的语音识别功能是基于科大讯飞语音包开发，具体请参考[讯飞开放平台](https://www.xfyun.cn/)
+
+2. libmsc.so是和个人ID绑定的，免费版每天试用次数是500次。建议使用者去飞开放平台申请自己的语音识别SDK替换此处的libmsc.so，并修改代码中的appid:
+
+```c++
+const char* login_params = "appid = 5d48d7a3, work_dir = .";
+```
+

@@ -51,6 +51,7 @@ private:
   bool stop_teleop_cb(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp);
   bool move_teleop_cb(rtp_msgs::RobotMove::Request &req, rtp_msgs::RobotMove::Response &resp);
   bool mode_teleop_cb(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp);
+  bool move_voice_control_cb(rtp_msgs::SetInt16::Request &req, rtp_msgs::SetInt16::Response &resp);
 
   /**
    * @brief execute a joint motion in blocking mode
@@ -126,6 +127,17 @@ private:
    */
   bool move_bringup(rtp_msgs::RobotMove::Request &req, rtp_msgs::RobotMove::Response &resp);
 
+  /**
+   * @brief encapsulation function to compute cartesian path
+   * @param waypoints
+   * @param trajectory
+   * @param eef_step
+   * @param maxtries
+   * @param jump_threshold
+   * @return
+   */
+  bool cartesian_path_plan(const std::vector<geometry_msgs::Pose> &waypoints, moveit_msgs::RobotTrajectory &trajectory ,const double eef_step, int maxtries=30, const double jump_threshold=0);
+
 private:
 
   //moveit stuff
@@ -142,6 +154,7 @@ private:
   ros::ServiceServer stop_teleop_server_;
   ros::ServiceServer move_teleop_server_;
   ros::ServiceServer mode_teleop_server_;
+  ros::ServiceServer move_voice_control_server_;
   ros::Publisher pub_rmi_;//topic to rmi_driver
 
 
@@ -223,6 +236,11 @@ private:
    * @brief user's command id to push back into robot_movement_interface::Command
    */
   int cmd_id_;
+
+  /**
+   * @brief default test point using in speech control case
+   */
+  std::vector<double> defalut_test_point;
 
 };
 
