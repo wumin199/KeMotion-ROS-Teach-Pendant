@@ -91,6 +91,8 @@ void MainWindow::initGui()
   ui->label_16->hide();
   ui->lineedit_reply_show->hide();
 
+  ui->gb_voice_control_test->hide();
+
   setWindowFlags(this->windowFlags() &~ Qt::WindowMaximizeButtonHint);
   setFixedSize(this->width(), this->height());
 
@@ -736,10 +738,6 @@ void MainWindow::start_voice_control()
   }
   else
   {
-    //record_button_pressed = std::chrono::system_clock::now();
-    //bflag = true;
-    //record_thread_ = std::thread(&MainWindow::record_thread, this);
-    //record_thread_.detach();
     ui->lineedit_echo_words->setText("recording...");
   }
 }
@@ -753,22 +751,7 @@ void MainWindow::stop_voice_control()
   {
     ui->lineedit_echo_words->setText("voice control stop request failed");
   }
-  //record_button_released = std::chrono::system_clock::now();
-  //bflag = false;
   ui->lineedit_echo_words->setText("recording completed");
-}
-
-void MainWindow::record_thread()
-{
-  ros::Rate loop_rate(10);
-  while (ros::ok() && bflag)
-  {
-    ROS_INFO("test");
-    loop_rate.sleep();
-  }
-
-  ROS_INFO("break");
-
 }
 
 void MainWindow::speech_status(const std_msgs::String::ConstPtr &msg)
@@ -782,65 +765,62 @@ void MainWindow::speech_status(const std_msgs::String::ConstPtr &msg)
   short request_data = 0;
   rtp_msgs::SetInt16 srv;
 
-  //parse Chinese speech data
-
-
-  //parse English speech data
+  //parse speech data
   if (data.length() < 3 || data.length() > 15)
   {
     ROS_INFO("data length [%d]", data.length());
     return;
   }
-  rst = (data.contains("up.",Qt::CaseInsensitive) || data.contains("上", Qt::CaseInsensitive));
+  rst = (data.contains("up",Qt::CaseInsensitive) || data.contains("上", Qt::CaseInsensitive));
   if (rst)
   {
     ROS_INFO("move up");
     request_data = 1;
   }
 
-  rst = (data.contains("down.",Qt::CaseInsensitive) || data.contains("下", Qt::CaseInsensitive));
+  rst = (data.contains("down",Qt::CaseInsensitive) || data.contains("下", Qt::CaseInsensitive));
   if (rst)
   {
     ROS_INFO("move down");
     request_data = 2;
   }
 
-  rst = (data.contains("left.",Qt::CaseInsensitive) || data.contains("左", Qt::CaseInsensitive));
+  rst = (data.contains("left",Qt::CaseInsensitive) || data.contains("左", Qt::CaseInsensitive));
   if (rst)
   {
     ROS_INFO("move left");
     request_data = 3;
   }
 
-  rst = (data.contains("right.",Qt::CaseInsensitive) || data.contains("右", Qt::CaseInsensitive));
+  rst = (data.contains("right",Qt::CaseInsensitive) || data.contains("右", Qt::CaseInsensitive));
   if (rst)
   {
     ROS_INFO("move right");
     request_data = 4;
   }
 
-  rst = (data.contains("forward.",Qt::CaseInsensitive) || data.contains("前", Qt::CaseInsensitive));
+  rst = (data.contains("forward",Qt::CaseInsensitive) || data.contains("前", Qt::CaseInsensitive));
   if (rst)
   {
     ROS_INFO("move forward");
     request_data = 5;
   }
 
-  rst = (data.contains("backward.",Qt::CaseInsensitive) || data.contains("后", Qt::CaseInsensitive));
+  rst = (data.contains("backward",Qt::CaseInsensitive) || data.contains("后", Qt::CaseInsensitive));
   if (rst)
   {
     ROS_INFO("move backward");
     request_data = 6;
   }
 
-  rst = (data.contains("stop.",Qt::CaseInsensitive) || data.contains("停止", Qt::CaseInsensitive));
+  rst = (data.contains("stop",Qt::CaseInsensitive) || data.contains("停止", Qt::CaseInsensitive));
   if (rst)
   {
     ROS_INFO("robot stop");
     request_data = 7;
   }
 
-  rst = (data.contains("point.",Qt::CaseInsensitive) || data.contains("测试", Qt::CaseInsensitive)); //test point
+  rst = (data.contains("point",Qt::CaseInsensitive) || data.contains("测试", Qt::CaseInsensitive)); //test point
   if (rst)
   {
     ROS_INFO("move to test point");
@@ -858,4 +838,44 @@ void MainWindow::speech_status(const std_msgs::String::ConstPtr &msg)
     ROS_INFO("request failed");
   }
 
+}
+
+void MainWindow::on_pb_stop_clicked()
+{
+  rtp_msgs::SetInt16 srv;
+  srv.request.data = 7;
+  if (!move_voice_control_client_.call(srv))
+  {
+    ROS_INFO("request failed");
+  }
+}
+
+void MainWindow::on_pb_testpoint_clicked()
+{
+  rtp_msgs::SetInt16 srv;
+  srv.request.data = 8;
+  if (!move_voice_control_client_.call(srv))
+  {
+    ROS_INFO("request failed");
+  }
+}
+
+void MainWindow::on_pb_moveup_clicked()
+{
+  rtp_msgs::SetInt16 srv;
+  srv.request.data = 1;
+  if (!move_voice_control_client_.call(srv))
+  {
+    ROS_INFO("request failed");
+  }
+}
+
+void MainWindow::on_pb_movedown_clicked()
+{
+  rtp_msgs::SetInt16 srv;
+  srv.request.data = 2;
+  if (!move_voice_control_client_.call(srv))
+  {
+    ROS_INFO("request failed");
+  }
 }

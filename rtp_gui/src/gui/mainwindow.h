@@ -131,6 +131,12 @@ private slots:
    */
   void stop_voice_control();
 
+  //used for test
+  void on_pb_stop_clicked();
+  void on_pb_testpoint_clicked();
+  void on_pb_moveup_clicked();
+  void on_pb_movedown_clicked();
+
 private:
 
   /**
@@ -210,9 +216,6 @@ private:
   std::chrono::system_clock::time_point time_button_released;
   std::chrono::system_clock::time_point record_button_pressed;
   std::chrono::system_clock::time_point record_button_released;
-
-  bool bflag = false;
-  std::thread record_thread_;
 };
 
 #endif // MAINWINDOW_H

@@ -138,6 +138,23 @@ private:
    */
   bool cartesian_path_plan(const std::vector<geometry_msgs::Pose> &waypoints, moveit_msgs::RobotTrajectory &trajectory ,const double eef_step, int maxtries=30, const double jump_threshold=0);
 
+
+  /**
+   * @brief voice control wrapper function in simulation
+   * @param command type parsed from voice speech
+   * @param velocity_scaling(0~1)
+   * @return
+   */
+  bool voice_control_simulation(const int cmd_type, const double velocity_scaling);
+
+  /**
+   * @brief voice control wrapper function in bringup
+   * @param command type parsed from voice speech
+   * @param velocity_scaling(0~1)
+   * @return
+   */
+  bool voice_control_bringup(const int cmd_type, const double velocity_scaling);
+
 private:
 
   //moveit stuff

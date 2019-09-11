@@ -21,6 +21,11 @@ ros::Publisher status_pub_;
 bool startFlag = false;//set by ui
 int resultFlag = 0;
 
+/**
+ * @brief show recognition result when
+ * @param speech content
+ * @param indicate if this is the whole speech
+ */
 static void show_result(char *str_speech, char is_over)
 {
   printf("this is show_result\n");
@@ -30,45 +35,7 @@ static void show_result(char *str_speech, char is_over)
   printf("show result is_over = [%d]\n", is_over);
   std::cout<< "\rResult\t["<< str<< "] " <<"is_over = [" <<flag<<"]" <<std::endl;
 
-  /*
-  if (str.compare("hello robot"))
-  {
-    resultFlag = 0;
-    return;
-  }
-
-  if (str.compare("move home"))
-  {
-    resultFlag = 1;
-  }
-
-  if (str.compare("move up"))
-  {
-    resultFlag = 1;
-  }
-
-  if (str.compare("move down"))
-  {
-    resultFlag = 1;
-  }
-
-  if (str.compare("move left"))
-  {
-    resultFlag = 1;
-  }
-
-  if (str.compare("move right"))
-  {
-    resultFlag = 1;
-  }
-  */
-
-
-  // printf("\rResult: [ %s ]", str_speech);
-  //if(is_over)
-  //  putchar('\n');
   if (is_over)
-  //if (flag == 1)
   {
     std::cout<<"pub status"<<std::endl;
     std_msgs::String msg;

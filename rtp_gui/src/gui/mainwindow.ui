@@ -1799,24 +1799,11 @@
      <attribute name="title">
       <string>VoiceControl</string>
      </attribute>
-     <widget class="QPushButton" name="button_voice_control_start">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>90</y>
-        <width>121</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Start</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_43">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>180</y>
+        <x>40</x>
+        <y>110</y>
         <width>131</width>
         <height>21</height>
        </rect>
@@ -1828,8 +1815,8 @@
      <widget class="QLineEdit" name="lineedit_echo_words">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>210</y>
+        <x>40</x>
+        <y>140</y>
         <width>441</width>
         <height>25</height>
        </rect>
@@ -1838,24 +1825,11 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="button_voice_control_stop">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>90</y>
-        <width>121</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Stop</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="button_voice_control">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>30</y>
+        <x>40</x>
+        <y>50</y>
         <width>261</width>
         <height>41</height>
        </rect>
@@ -1863,6 +1837,88 @@
       <property name="text">
        <string>Record</string>
       </property>
+     </widget>
+     <widget class="QGroupBox" name="gb_voice_control_test">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>270</y>
+        <width>421</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Test Area</string>
+      </property>
+      <widget class="QWidget" name="">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>381</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="pb_stop">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>stop</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_testpoint">
+          <property name="text">
+           <string>test point</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_moveup">
+          <property name="text">
+           <string>move up</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_movedown">
+          <property name="text">
+           <string>move down</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>100</y>
+         <width>168</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="button_voice_control_start">
+          <property name="text">
+           <string>Start</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="button_voice_control_stop">
+          <property name="text">
+           <string>Stop</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </widget>
    </widget>

@@ -851,150 +851,34 @@ bool RtpTeleop::move_voice_control_cb(rtp_msgs::SetInt16::Request &req, rtp_msgs
   if (mode_ == false)//simulation
   {
     group_->stop();
-    if (req.data == 7)//speech: robot stop
-    {
-      resp.success = true;
-      return true;
-    }
 
-    if (req.data == 8)//speech : move to test point
-    {
-      group_->setJointValueTarget(defalut_test_point);
-      moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-      moveit::planning_interface::MoveItErrorCode success = group_->plan(my_plan);
-      if (success)
-      {
-        trajectory_scaling(my_plan.trajectory_, velocity_scale);
-        group_->execute(my_plan);
-      }
-      else
-      {
-        ROS_INFO("move to test point failed");
-      }
-      resp.success = true;
-      return true;
-    }
-
-  }
-  else//bring up
-  {
-
-  }
-
-
-  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
-  for (int i = 0; i < group_->getJointNames().size(); i++)
-  {
-    my_plan.trajectory_.joint_trajectory.joint_names.push_back(group_->getJointNames()[i]);
-  }
-  my_plan.trajectory_.joint_trajectory.header.seq = 0;
-  my_plan.trajectory_.joint_trajectory.header.frame_id = reference_link_;//"/base_link"
-
-  std::vector<geometry_msgs::Pose> waypoints;
-  geometry_msgs::Pose currentt_pose;//first point
-  currentt_pose.position = group_->getCurrentPose().pose.position;
-  currentt_pose.orientation = group_->getCurrentPose().pose.orientation;
-  waypoints.push_back(currentt_pose);
-
-  moveit_msgs::RobotTrajectory trajectory;
-
-  geometry_msgs::Pose pose(currentt_pose);//second point
-
-  double increment = 0.1;//10cm
-
-  if (req.data == 1) //move up:z+
-  {
-    pose.position.z += increment;
-  }
-
-  if (req.data == 2)//move down:z-
-  {
-    pose.position.z -= increment;
-  }
-
-  if (req.data == 3)//move left:y+
-  {
-    pose.position.y += increment;
-  }
-
-  if (req.data == 4)//move left:y-
-  {
-    pose.position.y -= increment;
-  }
-
-  if (req.data == 5)//move forward:x+
-  {
-    pose.position.x += increment;
-  }
-
-  if (req.data == 6)//move backward:x-
-  {
-    pose.position.x -= increment;
-  }
-
-  waypoints.push_back(pose);
-
-
-  bool rst = cartesian_path_plan(waypoints, trajectory,0.005, 30, 0);
-  if (rst)
-  {
-    trajectory_scaling(trajectory, velocity_scale);
-    my_plan.trajectory_ = trajectory;
-    group_->asyncExecute(my_plan);
-    resp.success = true;
-    return true;
-  }
-  else
-  {
-    pose = currentt_pose;
-    if (req.data == 1) //move up:z+
-    {
-      pose.position.z += increment/2;
-    }
-
-    if (req.data == 2)//move down:z-
-    {
-      pose.position.z -= increment/2;
-    }
-
-    if (req.data == 3)//move left:y+
-    {
-      pose.position.y += increment/2;
-    }
-
-    if (req.data == 4)//move left:y-
-    {
-      pose.position.y -= increment/2;
-    }
-
-    if (req.data == 5)//move forward:x+
-    {
-      pose.position.x += increment/2;
-    }
-
-    if (req.data == 6)//move backward:x-
-    {
-      pose.position.x -= increment/2;
-    }
-
-    waypoints.back() = pose;
-
-    rst = cartesian_path_plan(waypoints, trajectory,0.005, 30, 0);
+    bool rst = voice_control_simulation(req.data, velocity_scale);
     if (rst)
     {
-      trajectory_scaling(trajectory, velocity_scale);
-      my_plan.trajectory_ = trajectory;
-      group_->asyncExecute(my_plan);
       resp.success = true;
       return true;
     }
     else
     {
       resp.success = false;
-      return false;
+      return true;
     }
   }
+  else//bring up
+  {
+    bool rst = voice_control_bringup(req.data, velocity_scale);
+    if (rst)
+    {
+      resp.success = true;
+      return true;
+    }
+    else
+    {
+      resp.success = false;
+      return true;
+    }
+  }
+
 }
 
 bool RtpTeleop::cartesian_path_plan(const std::vector<geometry_msgs::Pose> &waypoints, moveit_msgs::RobotTrajectory &trajectory, const double eef_step, int maxtries, const double jump_threshold)
@@ -1014,5 +898,350 @@ bool RtpTeleop::cartesian_path_plan(const std::vector<geometry_msgs::Pose> &wayp
   else
   {
     return false;
+  }
+}
+
+bool RtpTeleop::voice_control_simulation(const int cmd_type, const double velocity_scaling)
+{
+  if (cmd_type == 7)//stop robot
+    return true;
+
+  if (cmd_type == 8)//move to test point
+    {
+      group_->setJointValueTarget(defalut_test_point);
+      moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+      moveit::planning_interface::MoveItErrorCode success = group_->plan(my_plan);
+      if (success)
+      {
+        trajectory_scaling(my_plan.trajectory_, velocity_scaling);
+        group_->asyncExecute(my_plan);
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+
+
+  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+  for (int i = 0; i < group_->getJointNames().size(); i++)
+  {
+    my_plan.trajectory_.joint_trajectory.joint_names.push_back(group_->getJointNames()[i]);
+  }
+  my_plan.trajectory_.joint_trajectory.header.seq = 0;
+  my_plan.trajectory_.joint_trajectory.header.frame_id = reference_link_;//"/base_link"
+
+  std::vector<geometry_msgs::Pose> waypoints;
+  geometry_msgs::Pose current_pose;//first point
+  current_pose.position = group_->getCurrentPose().pose.position;
+  current_pose.orientation = group_->getCurrentPose().pose.orientation;
+  waypoints.push_back(current_pose);
+
+  moveit_msgs::RobotTrajectory trajectory;
+
+  geometry_msgs::Pose pose(current_pose);//second point
+
+  double increment = 0.1;//10cm
+
+  if (cmd_type == 1) //move up:z+
+  {
+    pose.position.z += increment;
+  }
+
+  if (cmd_type == 2)//move down:z-
+  {
+    pose.position.z -= increment;
+  }
+
+  if (cmd_type == 3)//move left:y+
+  {
+    pose.position.y += increment;
+  }
+
+  if (cmd_type == 4)//move left:y-
+  {
+    pose.position.y -= increment;
+  }
+
+  if (cmd_type == 5)//move forward:x+
+  {
+    pose.position.x += increment;
+  }
+
+  if (cmd_type == 6)//move backward:x-
+  {
+    pose.position.x -= increment;
+  }
+
+  waypoints.push_back(pose);
+
+
+  bool rst = cartesian_path_plan(waypoints, trajectory,0.005, 30, 0);
+  if (rst)
+  {
+    trajectory_scaling(trajectory, velocity_scaling);
+    my_plan.trajectory_ = trajectory;
+    group_->asyncExecute(my_plan);
+    return true;
+  }
+  else
+  {
+    pose = current_pose;
+    if (cmd_type == 1) //move up:z+
+    {
+      pose.position.z += increment/2;
+    }
+
+    if (cmd_type == 2)//move down:z-
+    {
+      pose.position.z -= increment/2;
+    }
+
+    if (cmd_type == 3)//move left:y+
+    {
+      pose.position.y += increment/2;
+    }
+
+    if (cmd_type == 4)//move left:y-
+    {
+      pose.position.y -= increment/2;
+    }
+
+    if (cmd_type == 5)//move forward:x+
+    {
+      pose.position.x += increment/2;
+    }
+
+    if (cmd_type == 6)//move backward:x-
+    {
+      pose.position.x -= increment/2;
+    }
+
+    waypoints.back() = pose;
+
+    rst = cartesian_path_plan(waypoints, trajectory,0.005, 30, 0);
+    if (rst)
+    {
+      trajectory_scaling(trajectory, velocity_scaling);
+      my_plan.trajectory_ = trajectory;
+      group_->asyncExecute(my_plan);
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
+}
+
+bool RtpTeleop::voice_control_bringup(const int cmd_type, const double velocity_scaling)
+{
+
+  if (cmd_type == 7)//stop robot
+  {
+    robot_movement_interface::Command cmd;
+    robot_movement_interface::CommandList cmd_list;
+    cmd.command_id = 1;
+    cmd.command_type = "ABORT";
+    cmd_list.commands.emplace_back(cmd);
+    pub_rmi_.publish(cmd_list);
+    return true;
+  }
+
+  if (cmd_type == 8)//move to test point
+  {
+    robot_movement_interface::Command cmd;
+    robot_movement_interface::CommandList cmd_list;
+    cmd.command_id = 1;
+    cmd.command_type = "ABORT";
+    cmd_list.commands.emplace_back(cmd);
+
+    cmd.command_id = 2;
+    cmd.command_type = "PTP";
+    cmd.pose_type = "JOINTS";
+    for (int i=0; i<6; i++)
+    {
+      cmd.pose.push_back(defalut_test_point[i]);
+    }
+
+    cmd.blending_type = "OVLREL";
+    cmd.blending.push_back(80.0);
+    cmd.velocity_type = "DYN";
+
+    for (int i = 0; i < 4; i++)
+    {
+      cmd.velocity.push_back(velocity_scaling * 100);//velAxis, accAxis, decAxis, jerkAxis
+    }
+
+    cmd.velocity.push_back(1000.0);//vel
+    cmd.velocity.push_back(5000.0);//acc
+    cmd.velocity.push_back(5000.0);//dec
+    cmd.velocity.push_back(100000.0);//jerk
+
+    cmd.velocity.push_back(1000.0);//velOri
+    cmd.velocity.push_back(5000.0);//accOri
+    cmd.velocity.push_back(5000.0);//decOri
+    cmd.velocity.push_back(100000.0);//jerkOri
+
+    cmd_list.commands.emplace_back(cmd);
+    pub_rmi_.publish(cmd_list);
+    return true;
+  }
+
+  robot_movement_interface::Command cmd;
+  robot_movement_interface::CommandList cmd_list;
+
+  cmd.command_id = 1;
+  cmd.command_type = "ABORT";
+  cmd_list.commands.emplace_back(cmd);
+
+  cmd.command_id = 2;
+  cmd.command_type = "LIN";
+  cmd.pose_type = "QUATERNION";
+  cmd.blending_type = "OVLREL";
+  cmd.blending.push_back(0.0);
+
+  cmd.velocity_type = "DYN";
+  for (int i = 0; i < 4; i++)
+  {
+    cmd.velocity.push_back(100); //velAxis, accAxis, decAxis, jerkAxis
+  }
+
+  cmd.velocity.push_back(1000.0 * velocity_scaling);//vel
+  cmd.velocity.push_back(5000.0 * velocity_scaling);//acc
+  cmd.velocity.push_back(5000.0 * velocity_scaling);//dec
+  cmd.velocity.push_back(100000.0 * velocity_scaling);//jerk
+
+  cmd.velocity.push_back(1000.0 * velocity_scaling);//velOri
+  cmd.velocity.push_back(5000.0 * velocity_scaling);//accOri
+  cmd.velocity.push_back(5000.0 * velocity_scaling);//decOri
+  cmd.velocity.push_back(100000.0 * velocity_scaling);//jerkOri
+
+  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+  for (int i = 0; i < group_->getJointNames().size(); i++)
+  {
+    my_plan.trajectory_.joint_trajectory.joint_names.push_back(group_->getJointNames()[i]);
+  }
+  my_plan.trajectory_.joint_trajectory.header.seq = 0;
+  my_plan.trajectory_.joint_trajectory.header.frame_id = reference_link_;//"/base_link"
+
+  std::vector<geometry_msgs::Pose> waypoints;
+  geometry_msgs::Pose current_pose;//first point
+  current_pose.position = group_->getCurrentPose().pose.position;
+  current_pose.orientation = group_->getCurrentPose().pose.orientation;
+  waypoints.push_back(current_pose);
+
+  moveit_msgs::RobotTrajectory trajectory;
+
+  geometry_msgs::Pose pose(current_pose);//second point
+
+  double increment = 0.1;//10cm
+
+  if (cmd_type == 1) //move up:z+
+  {
+    pose.position.z += increment;
+  }
+
+  if (cmd_type == 2)//move down:z-
+  {
+    pose.position.z -= increment;
+  }
+
+  if (cmd_type == 3)//move left:y+
+  {
+    pose.position.y += increment;
+  }
+
+  if (cmd_type == 4)//move left:y-
+  {
+    pose.position.y -= increment;
+  }
+
+  if (cmd_type == 5)//move forward:x+
+  {
+    pose.position.x += increment;
+  }
+
+  if (cmd_type == 6)//move backward:x-
+  {
+    pose.position.x -= increment;
+  }
+
+  waypoints.push_back(pose);
+
+
+  bool rst = cartesian_path_plan(waypoints, trajectory,0.005, 30, 0);
+  if (rst)
+  {
+    cmd.pose.push_back(pose.position.x);
+    cmd.pose.push_back(pose.position.y);
+    cmd.pose.push_back(pose.position.z);
+    cmd.pose.push_back(pose.orientation.w);
+    cmd.pose.push_back(pose.orientation.x);
+    cmd.pose.push_back(pose.orientation.y);
+    cmd.pose.push_back(pose.orientation.z);
+
+    cmd_list.commands.emplace_back(cmd);
+    pub_rmi_.publish(cmd_list);
+    return true;
+  }
+  else
+  {
+    pose = current_pose;
+    if (cmd_type == 1) //move up:z+
+    {
+      pose.position.z += increment/2;
+    }
+
+    if (cmd_type == 2)//move down:z-
+    {
+      pose.position.z -= increment/2;
+    }
+
+    if (cmd_type == 3)//move left:y+
+    {
+      pose.position.y += increment/2;
+    }
+
+    if (cmd_type == 4)//move left:y-
+    {
+      pose.position.y -= increment/2;
+    }
+
+    if (cmd_type == 5)//move forward:x+
+    {
+      pose.position.x += increment/2;
+    }
+
+    if (cmd_type == 6)//move backward:x-
+    {
+      pose.position.x -= increment/2;
+    }
+
+    waypoints.back() = pose;
+
+    rst = cartesian_path_plan(waypoints, trajectory,0.005, 30, 0);
+    if (rst)
+    {
+      cmd.pose.push_back(pose.position.x);
+      cmd.pose.push_back(pose.position.y);
+      cmd.pose.push_back(pose.position.z);
+      cmd.pose.push_back(pose.orientation.w);
+      cmd.pose.push_back(pose.orientation.x);
+      cmd.pose.push_back(pose.orientation.y);
+      cmd.pose.push_back(pose.orientation.z);
+
+      cmd_list.commands.emplace_back(cmd);
+      pub_rmi_.publish(cmd_list);
+      return true;
+    }
+    else
+    {
+      return false;
+    }
   }
 }
