@@ -28,7 +28,7 @@ RtpTeleop::RtpTeleop(moveit::planning_interface::MoveGroupInterface *group, plan
   }
 
   //new end effector and planning frame if user resets them
-  end_link_ = group_->getEndEffectorLink();
+  end_link_ = group_->getEndEffectorLink();//eg. "tool0"
   reference_link_ = group_->getPlanningFrame(); //eg. "/base_link"
 
   //default end effector and planning frame
@@ -37,6 +37,30 @@ RtpTeleop::RtpTeleop(moveit::planning_interface::MoveGroupInterface *group, plan
 
   defalut_test_point = {0,-20,0,0,-60,0};//degree
   std::for_each(defalut_test_point.begin(), defalut_test_point.end(), [](double &value){value *= (M_PI/180);});
+
+
+  /* pose translation test */
+  /*
+  geometry_msgs::PoseStamped pose_input;
+  pose_input.pose.position.x = 3;
+  pose_input.pose.position.y = 7;
+  pose_input.pose.position.z = 9;
+  pose_input.pose.orientation.x = 0.9063;
+  pose_input.pose.orientation.y = 0;
+  pose_input.pose.orientation.z = 0;
+  pose_input.pose.orientation.w = 0.4225;
+  ROS_INFO_STREAM("input pose is : \n" << pose_input);
+
+  moveit_msgs::GripperTranslation gripper_trans;
+  gripper_trans.direction.vector.x = 1.8;
+  gripper_trans.direction.vector.y = 2.6;
+  gripper_trans.direction.vector.z = 7.8;
+  gripper_trans.desired_distance = 3.5;
+
+  pose_translation(pose_input, gripper_trans);
+  ROS_INFO_STREAM("gripper translation is : \n" << gripper_trans);
+  ROS_INFO_STREAM("result is : \n" << pose_input);
+  */
 }
 
 bool RtpTeleop::joint_teleop_cb(rtp_msgs::SetInt16::Request &req, rtp_msgs::SetInt16::Response &resp)
@@ -484,6 +508,27 @@ void RtpTeleop::pose_stamped_rotation(geometry_msgs::PoseStamped &pose_stamped, 
   pose_stamped.pose.orientation.y = q_2.getY();
   pose_stamped.pose.orientation.z = q_2.getZ();
   pose_stamped.pose.orientation.w = q_2.getW();
+}
+
+void RtpTeleop::pose_translation(geometry_msgs::PoseStamped &pose_stamped, const moveit_msgs::GripperTranslation &trans_direction)
+{
+  //only one coordinate here, the reference frame is pose_stamped.header.frame_id
+  tf::Transform old_target;// old_target ==>pose_stamped.header.frame_id
+  tf::poseMsgToTF(pose_stamped.pose, old_target);
+
+  tf::Transform trans;//representation in original coordinate system
+  trans.setIdentity();//set this transformation to the identity  (hence no rotation in this case)
+  tf::Vector3 v3;
+  tf::vector3MsgToTF(trans_direction.direction.vector,v3);
+  trans.setOrigin(v3.normalized() * trans_direction.desired_distance);
+
+  tf::Transform new_target;//new_target==>pose_stamped.header.frame_id
+  new_target = trans * old_target;
+
+  pose_stamped.pose.position.x = new_target.getOrigin().getX();
+  pose_stamped.pose.position.y = new_target.getOrigin().getY();
+  pose_stamped.pose.position.z = new_target.getOrigin().getZ();
+  //orientation remains the same
 }
 
 bool RtpTeleop::check_points_in_home_mode(const std::vector<double> &position_goal, const std::vector<double> &calculation_point, std::vector<double> &speed, double time_increment)

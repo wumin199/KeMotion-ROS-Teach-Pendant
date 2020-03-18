@@ -9,6 +9,7 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/ompl_interface/ompl_interface.h>
+#include <moveit_msgs/GripperTranslation.h>
 #include <actionlib/client/simple_action_client.h>
 #include <tf/transform_listener.h>
 #include <tf_conversions/tf_eigen.h>
@@ -90,6 +91,17 @@ private:
    * @param angle The rotation angle along axis
    */
   void pose_stamped_rotation(geometry_msgs::PoseStamped &pose_stamped, const tf::Vector3 &axis, double angle);
+
+
+  /**
+   * @brief pose_translation move a pose by certain distance along certain direction, with rotation staying the same
+   *
+   * There's no coordinate transformation involved, only one coordinate system
+   *
+   * @param pose_stamped  pose to be moved
+   * @param trans_direction including distance and direction
+   */
+  void pose_translation(geometry_msgs::PoseStamped &pose_stamped, const moveit_msgs::GripperTranslation &trans_direction);
 
   /**
    * @brief Check if an point is too close to the goal point. If so, we use goal point instead

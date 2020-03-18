@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   control_msgs
   robot_movement_interface
+  moveit_msgs
 )
 #find_package(Boost REQUIRED COMPONENTS system thread)
 
@@ -54,7 +55,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES rtp_gui
-  CATKIN_DEPENDS roscpp std_msgs moveit_core moveit_ros_planning moveit_ros_planning_interface moveit_planners_ompl tf tf_conversions robot_movement_interface
+  CATKIN_DEPENDS roscpp std_msgs moveit_core moveit_ros_planning moveit_ros_planning_interface moveit_planners_ompl tf tf_conversions robot_movement_interface moveit_msgs
   #DEPENDS Boost
 )
 
