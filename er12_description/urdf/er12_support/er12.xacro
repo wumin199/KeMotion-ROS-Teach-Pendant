@@ -1,0 +1,252 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+	<xacro:macro name="er12" params="prefix">
+		<!-- Defining the colors used in this robot -->
+		<material name="Black">
+			<color rgba="0 0 0 1"/>
+		</material>
+		<material name="White">
+			<color rgba="1 1 1 1"/>
+		</material>
+		<material name="Blue">
+			<color rgba="0 0 1 1"/>
+		</material>
+		<material name="Red">
+			<color rgba="1 0 0 1"/>
+		</material>
+
+		<!-- Constants -->
+		<xacro:property name="M_PI" value="3.14159"/>
+
+		<!-- Robot DH Parameter -->
+		<xacro:property name="DH_L1" value="0.430" /> 
+		<xacro:property name="DH_L2" value="0.6702776" /> 
+		<xacro:property name="DH_L3" value="0.1093699" /> 
+		<xacro:property name="DH_L4" value="0.70014177" /> 
+		<xacro:property name="DH_L5" value="0.120" /> 
+		<xacro:property name="DH_L6" value="0.18653296" /> 
+		<xacro:property name="DH_L7" value="0.00018595" /> 
+		
+		<!-- Robot Limit -->
+		<xacro:property name="j1_lower" value="-2.87979" />  <!-- rad -->
+		<xacro:property name="j1_upper" value="2.87979" /> 
+		<xacro:property name="j1_speed" value="6.9813" /> <!-- rad/s -->
+		<xacro:property name="j2_lower" value="-1.4835" /> 
+		<xacro:property name="j2_upper" value="2.87979" /> 
+		<xacro:property name="j2_speed" value="6.9813" /> 
+		<xacro:property name="j3_lower" value="-2.5307" /> 
+		<xacro:property name="j3_upper" value="1.309" /> 
+		<xacro:property name="j3_speed" value="4.7123889" /> 
+		<xacro:property name="j4_lower" value="-6.2832" /> 
+		<xacro:property name="j4_upper" value="6.2832" /> 
+		<xacro:property name="j4_speed" value="4.712" /> 
+		<xacro:property name="j5_lower" value="-2.269" /> 
+		<xacro:property name="j5_upper" value="2.269" /> 
+		<xacro:property name="j5_speed" value="12.217" /> 
+		<xacro:property name="j6_lower" value="-6.2832" /> 
+		<xacro:property name="j6_upper" value="6.2832" /> 
+		<xacro:property name="j6_speed" value="13.614" /> 
+
+		<!-- Robot Model -->
+		<xacro:property name="link1_radius" value="0.19" />
+		<xacro:property name="link1_mass" value="1" />		
+                <xacro:property name="link2_radius" value="0.03" />
+		<xacro:property name="link2_mass" value="0.8" />	
+                <xacro:property name="link3_radius" value="0.03" />
+		<xacro:property name="link3_mass" value="0.7" />	
+                <xacro:property name="link4_radius" value="0.03" />
+		<xacro:property name="link4_mass" value="0.7" />	
+                <xacro:property name="link5_radius" value="0.03" />
+		<xacro:property name="link5_mass" value="0.6" />	
+                <xacro:property name="link6_radius" value="0.03" />
+		<xacro:property name="link6_mass" value="0.3" />
+                <xacro:property name="link6_length" value="0.01" />
+		
+		<!-- Macro for inertia matrix -->
+		<xacro:macro name="cylinder_inertial_matrix_z" params="m r h">
+			<inertial>
+				<mass value="${m}" />
+				<inertia ixx="${m*(3*r*r+h*h)/12+m*h*h/4}" ixy = "0" ixz = "0"
+					iyy="${m*(3*r*r+h*h)/12+m*h*h/4}" iyz = "0"
+					izz="${m*r*r/2}" /> 
+			</inertial>
+		</xacro:macro>
+
+		<xacro:macro name="cylinder_inertial_matrix_y" params="m r h">
+			<inertial>
+				<mass value="${m}" />
+				<inertia ixx="${m*(3*r*r+h*h)/12+m*h*h/4}" ixy = "0" ixz = "0"
+					iyy="${m*r*r/2}" iyz = "0"
+					izz="${m*(3*r*r+h*h)/12+m*h*h/4}" /> 
+			</inertial>
+		</xacro:macro>
+		
+		<xacro:macro name="cylinder_inertial_matrix_x" params="m r h">
+			<inertial>
+				<mass value="${m}" />
+				<inertia ixx="${m*r*r/2}" ixy = "0" ixz = "0"
+					iyy="${m*(3*r*r+h*h)/12+m*h*h/4}" iyz = "0"
+					izz="${m*(3*r*r+h*h)/12+m*h*h/4}" /> 
+			</inertial>
+		</xacro:macro>
+
+		<!-- joint list -->
+		<joint type="revolute" name="${prefix}joint_1">
+		  <origin xyz="0 0 0" rpy="0 0 0"/>
+		  <axis xyz="0 0 1"/>
+		  <parent link="${prefix}base_link"/>
+		  <child link="${prefix}link_1"/>
+		  <limit effort="0" lower="${j1_lower}" upper="${j1_upper}" velocity="${j1_speed}"/>
+		</joint>
+		<joint type="revolute" name="${prefix}joint_2">
+		  <origin xyz="${DH_L6} 0 ${DH_L1}" rpy="${M_PI/2} 0 0"/>
+		  <axis xyz="0 0 1"/>
+		  <parent link="${prefix}link_1"/>
+		  <child link="${prefix}link_2"/>
+		  <limit effort="0" lower="${j2_lower}" upper="${j2_upper}" velocity="${j2_speed}"/>
+		</joint>
+		<joint type="revolute" name="${prefix}joint_3">
+		  <origin xyz="0 ${DH_L2} 0" rpy="0 0 ${M_PI/2}"/>
+		  <axis xyz="0 0 1"/>
+		  <parent link="${prefix}link_2"/>
+		  <child link="${prefix}link_3"/>
+		  <limit effort="0" lower="${j3_lower}" upper="${j3_upper}" velocity="${j3_speed}"/>
+		</joint>
+		<joint type="revolute" name="${prefix}joint_4">
+		  <origin xyz="${DH_L3} 0 0" rpy="${M_PI/2} 0 0"/>
+		  <axis xyz="0 0 1"/>
+		  <parent link="${prefix}link_3"/>
+		  <child link="${prefix}link_4"/>
+		  <limit effort="0" lower="${j4_lower}" upper="${j4_upper}" velocity="${j4_speed}"/>
+		</joint>
+		<joint type="revolute" name="${prefix}joint_5">
+		  <origin xyz="0 0 ${DH_L4}" rpy="-${M_PI/2} 0 0"/>
+		  <axis xyz="0 0 1"/>
+		  <parent link="${prefix}link_4"/>
+		  <child link="${prefix}link_5"/>
+		  <limit effort="0" lower="${j5_lower}" upper="${j5_upper}" velocity="${j5_speed}"/>
+		</joint>
+		<joint type="revolute" name="${prefix}joint_6">
+		  <origin xyz="0 -${DH_L5} 0" rpy="${M_PI/2} 0 0"/>
+		  <axis xyz="0 0 1"/>
+		  <parent link="${prefix}link_5"/>
+		  <child link="${prefix}link_6"/>
+		  <limit effort="0" lower="${j6_lower}" upper="${j6_upper}" velocity="${j6_speed}"/>
+		</joint>
+		<joint type="fixed" name="${prefix}joint_6-tool0">
+		  <parent link="${prefix}link_6"/>
+		  <child link="${prefix}tool0"/>
+		  <origin xyz="0 0 0" rpy="0 0 0"/>
+		</joint>
+	   
+		<!-- ROS base_link to KeMotion World Coordinates transform -->
+		<joint name="${prefix}base_link-base" type="fixed">
+		  <origin xyz="0 0 0" rpy="0 0 0"/>
+		  <parent link="${prefix}base_link"/>
+		  <child link="${prefix}base"/>
+		</joint>	
+		
+		<!-- link list -->
+		<link name="${prefix}base" />		
+		<link name="${prefix}base_link" />
+		<link name="${prefix}link_1" >
+			<visual>
+				<origin xyz="0 0 ${DH_L1/2}" rpy="0 0 0" />
+				<geometry>
+					<cylinder radius="${link1_radius}" length="${DH_L1}"/>
+				</geometry>
+				<material name="Blue" />
+			</visual>
+			<collision>
+				<origin xyz="0 0 ${DH_L1/2}" rpy="0 0 0" />
+				<geometry>
+					<cylinder radius="${link1_radius}" length="${DH_L1}"/>
+				</geometry>
+			</collision>
+			<cylinder_inertial_matrix_z m="${link1_mass}" r="${link1_radius}" h="${DH_L1}"/>	
+		</link>
+		<link name="${prefix}link_2" >
+			<visual>
+				<origin xyz="0 ${DH_L2/2} 0" rpy="-${M_PI/2} 0 0" />
+				<geometry>
+					<cylinder radius="${link2_radius}" length="${DH_L2}"/>
+				</geometry>
+				<material name="White" />
+			</visual>
+			<collision>
+				<origin xyz="0 ${DH_L2/2} 0" rpy="-${M_PI/2} 0 0" />
+				<geometry>
+					<cylinder radius="${link2_radius}" length="${DH_L2}"/>
+				</geometry>
+			</collision>
+			<cylinder_inertial_matrix_y m="${link2_mass}" r="${link2_radius}" h="${DH_L2}"/>	
+		</link>
+		<link name="${prefix}link_3" >
+			<visual>
+				<origin xyz="${DH_L3/2} 0 0" rpy="0 ${M_PI/2} 0" />
+				<geometry>
+					<cylinder radius="${link3_radius}" length="${DH_L3}"/>
+				</geometry>
+				<material name="Blue" />
+			</visual>
+			<collision>
+				<origin xyz="${DH_L3/2} 0 0" rpy="0 ${M_PI/2} 0" />
+				<geometry>
+					<cylinder radius="${link3_radius}" length="${DH_L3}"/>
+				</geometry>
+			</collision>
+			<cylinder_inertial_matrix_x m="${link3_mass}" r="${link3_radius}" h="${DH_L3}"/>	
+		</link>	
+		<link name="${prefix}link_4" >
+			<visual>
+				<origin xyz="0 0 ${DH_L4/2}" rpy="0 0 0" />
+				<geometry>
+					<cylinder radius="${link4_radius}" length="${DH_L4}"/>
+				</geometry>
+				<material name="Red" />
+			</visual>
+			<collision>
+				<origin xyz="0 0 ${DH_L4/2}" rpy="0 0 0" />
+				<geometry>
+					<cylinder radius="${link4_radius}" length="${DH_L4}"/>
+				</geometry>
+			</collision>
+			<cylinder_inertial_matrix_z m="${link4_mass}" r="${link4_radius}" h="${DH_L4}"/>		
+		</link>
+		<link name="${prefix}link_5" >
+			<visual>
+				<origin xyz="0 -${DH_L5/2} 0" rpy="${M_PI/2} 0 0" />
+				<geometry>
+					<cylinder radius="${link5_radius}" length="${DH_L5}"/>
+				</geometry>
+				<material name="Blue" />
+			</visual>
+			<collision>
+				<origin xyz="0 -${DH_L5/2} 0" rpy="${M_PI/2} 0 0" />
+				<geometry>
+					<cylinder radius="${link5_radius}" length="${DH_L5}"/>
+				</geometry>
+			</collision>
+			<cylinder_inertial_matrix_y m="${link5_mass}" r="${link5_radius}" h="${DH_L5}"/>
+		</link>
+		<link name="${prefix}link_6" >
+			<visual>
+				<origin xyz="0 0 -${link6_length/2}" rpy="0 0 0" />
+				<geometry>
+					<cylinder radius="${link6_radius}" length="${link6_length}"/>
+				</geometry>
+				<material name="White" />
+			</visual>
+			<collision>
+				<origin xyz="0 0 -${link6_length/2}" rpy="0 0 0" />
+				<geometry>
+					<cylinder radius="${link6_radius}" length="${link6_length}"/>
+				</geometry>
+			</collision>
+			<cylinder_inertial_matrix_z m="${link6_mass}" r="${link6_radius}" h="${link6_length}"/>		
+		
+		</link>
+		<link name="${prefix}tool0"/>
+	</xacro:macro>
+</robot>
+

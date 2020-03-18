@@ -1,0 +1,19 @@
+<launch>
+  <arg name="model" default="$(find xacro)/xacro --inorder '$(find er12_description)/urdf/er12_support/er12.urdf.xacro'" />
+  <arg name="gui" default="true" />
+  <param name="robot_description" command="$(arg model)" />
+
+  <!-- By default, show joint_state_publisher's GUI -->
+  <param name="use_gui" value="$(arg gui)"/>
+
+  <!-- publish fake joint states  -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+  <!-- Given the published joint states, publish tf for the robot links  -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- Run Rviz and load the default config to see the state of the move_group node -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find er12_description)/config/er12.rviz" required="true" />
+
+</launch>
+
