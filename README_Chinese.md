@@ -60,7 +60,7 @@ sudo cp libmsc.so /usr/lib/libmsc.so
 同时安装语音控制的其他依赖：
 
 ```sh
-sudo apt-get install libasound2
+sudo apt-get install libasound2-dev
 ```
 
 

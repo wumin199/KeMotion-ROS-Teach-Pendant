@@ -59,7 +59,7 @@ sudo cp libmsc.so /usr/lib/libmsc.so
 and also install other speech recognition dependies:
 
 ```sh
-sudo apt-get install libasound2
+sudo apt-get install libasound2-dev
 ```
 
 - Install this package **RTP Demo**:

@@ -796,7 +796,7 @@ bool RtpTeleop::move_bringup(rtp_msgs::RobotMove::Request &req, rtp_msgs::RobotM
   creat_cmd_list(req.cmd, cmd_list);
 
   pub_rmi_.publish(cmd_list);
-
+  //ROS_INFO_STREAM("cmd_list: \n" << cmd_list);
   resp.success = true;
   return true;
 }
