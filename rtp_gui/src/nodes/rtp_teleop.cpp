@@ -35,10 +35,6 @@ RtpTeleop::RtpTeleop(moveit::planning_interface::MoveGroupInterface *group, plan
   default_tip_link_ = group_->getEndEffectorLink();
   root_link_ = group_->getPlanningFrame();
 
-  defalut_test_point = {0,-20,0,0,-60,0};//degree
-  std::for_each(defalut_test_point.begin(), defalut_test_point.end(), [](double &value){value *= (M_PI/180);});
-
-
   /* pose translation test */
   /*
   geometry_msgs::PoseStamped pose_input;
@@ -793,10 +789,12 @@ bool RtpTeleop::move_simulation(rtp_msgs::RobotMove::Request &req, rtp_msgs::Rob
 bool RtpTeleop::move_bringup(rtp_msgs::RobotMove::Request &req, rtp_msgs::RobotMove::Response &resp)
 {
   robot_movement_interface::CommandList cmd_list;
+  ROS_INFO_STREAM("robotMove request: \n" << req.cmd);
+
   creat_cmd_list(req.cmd, cmd_list);
 
   pub_rmi_.publish(cmd_list);
-  //ROS_INFO_STREAM("cmd_list: \n" << cmd_list);
+  ROS_INFO_STREAM("cmd_list: \n" << cmd_list);
   resp.success = true;
   return true;
 }
@@ -832,26 +830,42 @@ robot_movement_interface::Command RtpTeleop::pose_to_rmi_command(const rtp_msgs:
 
     cmd.velocity_type = "DYN";
 
+    /*
     for (int i = 0; i < 4; i++)
     {
       cmd.velocity.push_back(robot_move_cmd.speed * 100);//velAxis, accAxis, decAxis, jerkAxis
     }
+    */
+    cmd.velocity.push_back(robot_move_cmd.speed * 100);//velAxis
+    cmd.velocity.push_back(100);//accAxis
+    cmd.velocity.push_back(100);//decAxis
+    cmd.velocity.push_back(100);//jerkAxis
 
-    cmd.velocity.push_back(1000.0);//vel
-    cmd.velocity.push_back(5000.0);//acc
-    cmd.velocity.push_back(5000.0);//dec
-    cmd.velocity.push_back(100000.0);//jerk
+    //according to robot default dynamics
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[0]);//velCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[1]);//accCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[2]);//decCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[3]);//jerkCart
 
-    cmd.velocity.push_back(1000.0);//velOri
-    cmd.velocity.push_back(5000.0);//accOri
-    cmd.velocity.push_back(5000.0);//decOri
-    cmd.velocity.push_back(100000.0);//jerkOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[4]);//velOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[5]);//accOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[6]);//decOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[7]);//jerkOri
 
     break;
 
   case 2:
     cmd.command_type = "LIN";
     cmd.command_id = cmd_id_++;
+
+    /*
+    cmd.pose_type = "JOINTS";
+    for (int i=0; i<6; i++)
+    {
+      cmd.pose.push_back(robot_move_cmd.joints_valus[i]);
+    }
+    */
+
     cmd.pose_type = "QUATERNION";
     cmd.pose.push_back(robot_move_cmd.pose.position.x);
     cmd.pose.push_back(robot_move_cmd.pose.position.y);
@@ -870,16 +884,28 @@ robot_movement_interface::Command RtpTeleop::pose_to_rmi_command(const rtp_msgs:
       cmd.velocity.push_back(100); //velAxis, accAxis, decAxis, jerkAxis
     }
 
-    cmd.velocity.push_back(1000.0 * robot_move_cmd.speed);//vel
-    cmd.velocity.push_back(5000.0 * robot_move_cmd.speed);//acc
-    cmd.velocity.push_back(5000.0 * robot_move_cmd.speed);//dec
-    cmd.velocity.push_back(100000.0 * robot_move_cmd.speed);//jerk
+    //according to robot default dynamics
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[0] * robot_move_cmd.speed);//velCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[1] * robot_move_cmd.speed);//accCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[2] * robot_move_cmd.speed);//decCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[3] * robot_move_cmd.speed);//jerkCart
 
-    cmd.velocity.push_back(1000.0 * robot_move_cmd.speed);//velOri
-    cmd.velocity.push_back(5000.0 * robot_move_cmd.speed);//accOri
-    cmd.velocity.push_back(5000.0 * robot_move_cmd.speed);//decOri
-    cmd.velocity.push_back(100000.0 * robot_move_cmd.speed);//jerkOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[4] * robot_move_cmd.speed);//velOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[5] * robot_move_cmd.speed);//accOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[6] * robot_move_cmd.speed);//decOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[7] * robot_move_cmd.speed);//jerkOri
 
+    /*
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[0] * robot_move_cmd.speed);//velCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[1]);//accCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[2]);//decCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[3]);//jerkCart
+
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[4] * robot_move_cmd.speed);//velOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[5]);//accOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[6]);//decOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[7]);//jerkOri
+    */
     break;
 
   default :
@@ -953,7 +979,7 @@ bool RtpTeleop::voice_control_simulation(const int cmd_type, const double veloci
 
   if (cmd_type == 8)//move to test point
     {
-      group_->setJointValueTarget(defalut_test_point);
+      group_->setJointValueTarget(rtp_gui::DEFAULT_VOICE_TEST_POINT);
       moveit::planning_interface::MoveGroupInterface::Plan my_plan;
       moveit::planning_interface::MoveItErrorCode success = group_->plan(my_plan);
       if (success)
@@ -1109,27 +1135,33 @@ bool RtpTeleop::voice_control_bringup(const int cmd_type, const double velocity_
     cmd.pose_type = "JOINTS";
     for (int i=0; i<6; i++)
     {
-      cmd.pose.push_back(defalut_test_point[i]);
+      cmd.pose.push_back(rtp_gui::DEFAULT_VOICE_TEST_POINT[i]);
     }
 
     cmd.blending_type = "OVLREL";
     cmd.blending.push_back(80.0);
     cmd.velocity_type = "DYN";
 
+    /*
     for (int i = 0; i < 4; i++)
     {
       cmd.velocity.push_back(velocity_scaling * 100);//velAxis, accAxis, decAxis, jerkAxis
     }
+    */
+    cmd.velocity.push_back(velocity_scaling * 100);//velAxis
+    cmd.velocity.push_back(100);//accAxis
+    cmd.velocity.push_back(100);//decAxis
+    cmd.velocity.push_back(100);//jerkAxis
 
-    cmd.velocity.push_back(1000.0);//vel
-    cmd.velocity.push_back(5000.0);//acc
-    cmd.velocity.push_back(5000.0);//dec
-    cmd.velocity.push_back(100000.0);//jerk
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[0]);//velCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[1]);//accCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[2]);//decCart
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[3]);//jerkCart
 
-    cmd.velocity.push_back(1000.0);//velOri
-    cmd.velocity.push_back(5000.0);//accOri
-    cmd.velocity.push_back(5000.0);//decOri
-    cmd.velocity.push_back(100000.0);//jerkOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[4]);//velOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[5]);//accOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[6]);//decOri
+    cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[7]);//jerkOri
 
     cmd_list.commands.emplace_back(cmd);
     pub_rmi_.publish(cmd_list);
@@ -1147,7 +1179,7 @@ bool RtpTeleop::voice_control_bringup(const int cmd_type, const double velocity_
   cmd.command_type = "LIN";
   cmd.pose_type = "QUATERNION";
   cmd.blending_type = "OVLREL";
-  cmd.blending.push_back(0.0);
+  cmd.blending.push_back(80.0);
 
   cmd.velocity_type = "DYN";
   for (int i = 0; i < 4; i++)
@@ -1155,15 +1187,27 @@ bool RtpTeleop::voice_control_bringup(const int cmd_type, const double velocity_
     cmd.velocity.push_back(100); //velAxis, accAxis, decAxis, jerkAxis
   }
 
-  cmd.velocity.push_back(1000.0 * velocity_scaling);//vel
-  cmd.velocity.push_back(5000.0 * velocity_scaling);//acc
-  cmd.velocity.push_back(5000.0 * velocity_scaling);//dec
-  cmd.velocity.push_back(100000.0 * velocity_scaling);//jerk
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[0] * velocity_scaling);//velCart
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[1] * velocity_scaling);//accCart
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[2] * velocity_scaling);//decCart
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[3] * velocity_scaling);//jerkCart
 
-  cmd.velocity.push_back(1000.0 * velocity_scaling);//velOri
-  cmd.velocity.push_back(5000.0 * velocity_scaling);//accOri
-  cmd.velocity.push_back(5000.0 * velocity_scaling);//decOri
-  cmd.velocity.push_back(100000.0 * velocity_scaling);//jerkOri
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[4] * velocity_scaling);//velOri
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[5] * velocity_scaling);//accOri
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[6] * velocity_scaling);//decOri
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[7] * velocity_scaling);//jerkOri
+
+  /*
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[0] * velocity_scaling);//velCart
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[1]);//accCart
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[2]);//decCart
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[3]);//jerkCart
+
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[4] * velocity_scaling);//velOri
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[5]);//accOri
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[6]);//decOri
+  cmd.velocity.push_back(rtp_gui::LIN_DYNAMICS_CONST[7]);//jerkOri
+  */
 
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 

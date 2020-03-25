@@ -23,6 +23,8 @@
 #include "rtp_gui/rtp_data_type.h"
 #include "rtp_msgs/RobotMoveCommands.h"
 #include "rtp_msgs/RobotMoveCommand.h"
+#include "rtp_gui/rtp_gui_const.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -131,6 +133,8 @@ private slots:
    */
   void stop_voice_control();
 
+  void tab_bar_clicked(int index);
+
   //used for test
   void on_pb_stop_clicked();
   void on_pb_testpoint_clicked();
@@ -166,6 +170,19 @@ private:
    * @param msg
    */
   void speech_status(const std_msgs::String::ConstPtr &msg);
+
+  /**
+   * @brief convert axis point to cart point
+   * important: this api must bu used after move_group has been designated
+   * @param joint_values  (rad)
+   * @param pose out put pose x,y,z (xyzw);  mm for x,y,z
+   * @param rpy  degree for rpy
+   * @param tool
+   */
+  bool ap2cp(const std::vector<double> &joint_values, tf::Pose &pose, std::vector<double> &rpy, const std::string &tool = "tool0");
+
+  //bool cp2ap(const geometry_msgs::Pose &pose, std::vector<double> &joint_values);
+
 
 private:
 

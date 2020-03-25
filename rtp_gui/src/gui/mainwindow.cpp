@@ -9,6 +9,7 @@
 #include <ros/ros.h>
 #include <exception>
 
+
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow),
@@ -18,8 +19,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
   initGui();
   initQtConnection();
-  initPointList();
-  show_point_position(1);
 
   joint_teleop_client_ = local_gui_node_.serviceClient<rtp_msgs::SetInt16>("joint_teleop");
   cart_teleop_client_ = local_gui_node_.serviceClient<rtp_msgs::SetInt16>("cart_teleop");
@@ -37,7 +36,6 @@ MainWindow::MainWindow(QWidget *parent) :
   speech_sub_ = local_gui_node_.subscribe("speech_status", 1000, &MainWindow::speech_status, this);
 
   ros_timer_ = local_gui_node_.createTimer(ros::Duration(0.1), boost::bind(&MainWindow::ros_timer_callback, this));
-
 
 }
 
@@ -83,6 +81,9 @@ void MainWindow::initQtConnection()
   //this->connect(ui->button_voice_control_stop, &QPushButton::clicked, this, &MainWindow::stop_voice_control);
   this->connect(ui->button_voice_control, &QPushButton::pressed, this, &MainWindow::start_voice_control);
   this->connect(ui->button_voice_control, &QPushButton::released, this, &MainWindow::stop_voice_control);
+
+  this->connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &MainWindow::tab_bar_clicked);
+
 }
 
 void MainWindow::initGui()
@@ -98,9 +99,11 @@ void MainWindow::initGui()
 
   ui->tabWidget->setCurrentIndex(0);
 
+  ui->tabWidget->setStyleSheet("QTabBar::tab::disabled {width: 0; color: transparent;}");
+
   //hide Transformation Tab
   ui->tabWidget->setTabEnabled(1, false);
-  ui->tabWidget->setStyleSheet("QTabBar::tab::disabled {width: 0; color: transparent;}");
+
 }
 
 void MainWindow::joint_jog()
@@ -236,6 +239,9 @@ void MainWindow::initMoveGroup(moveit::planning_interface::MoveGroupInterface *g
   group_ = group;
   end_link_ = group_->getEndEffectorLink();
   reference_link_ = group_->getPlanningFrame();
+
+  initPointList();
+  //show_point_position(1);
 }
 
 void MainWindow::ros_timer_callback()
@@ -368,6 +374,12 @@ void MainWindow::on_button_ik_1_clicked()//cp-->ap
   pose.orientation.z = ui->lineedit_ik1_qz->text().toDouble();
   pose.orientation.w = ui->lineedit_ik1_qw->text().toDouble();
 
+  if (pose.position.x < 0.001 && pose.position.y < 0.001 && pose.position.z < 0.001)
+  {
+    ROS_WARN("check input values!");
+    return;
+  }
+
   Eigen::Affine3d affine_pose;
   tf::Pose tf_pose;
   tf::poseMsgToTF(pose, tf_pose);
@@ -451,6 +463,12 @@ void MainWindow::on_button_ik_2_clicked()//cp-->ap
   pose.orientation.z = quaternion.getZ();
   pose.orientation.w = quaternion.getW();
 
+  if (pose.position.x < 0.001 && pose.position.y < 0.001 && pose.position.z < 0.001)
+  {
+    ROS_WARN("check input values!");
+    return;
+  }
+
   Eigen::Affine3d affine_pose;
   tf::Pose tf_pose;
   tf::poseMsgToTF(pose, tf_pose);
@@ -511,27 +529,28 @@ void MainWindow::on_button_ik_2_clicked()//cp-->ap
 
 void MainWindow::initPointList()
 {
-  geometry_msgs::Pose pose;
+  geometry_msgs::Pose msg;
+  tf::Pose pose;
   std::vector<double> joint_values(6);
-  std::vector<double> rpy(3);
+  std::vector<double> rpy;
 
   //point1
   rtp_gui::MotionRequestData point_1("point1", rtp_gui::PTP, 0.4);
-
-  pose.position.x = 0.4245;//m
-  pose.position.y = 0.0;
-  pose.position.z = 0.69489;
-  pose.orientation.x = 0.97;
-  pose.orientation.y = 0;
-  pose.orientation.z = 0.26;
-  pose.orientation.w = 0;
-  point_1.setPose(pose);
-
+#ifdef er7
   joint_values = {0, 0, 0, 0, -60, 0};
+#endif
+
+#ifdef er12
+  joint_values = {0, 0, 0, 0, 60, 0};
+#endif
+
   std::for_each(joint_values.begin(), joint_values.end(), [](double &value){value *= (M_PI/180);});
   point_1.setJointValues(joint_values);
 
-  rpy= {180, -30, 0};
+  ap2cp(joint_values, pose, rpy);
+  tf::poseTFToMsg(pose,msg);
+  point_1.setPose(msg);
+
   std::for_each(rpy.begin(), rpy.end(), [](double &value){value *= (M_PI/180);});
   point_1.setRPY(rpy);
 
@@ -539,67 +558,66 @@ void MainWindow::initPointList()
 
   //point2
   rtp_gui::MotionRequestData point_2("point2", rtp_gui::PTP, 0.4);
-
-  pose.position.x = 0.50671;
-  pose.position.y = 0.0;
-  pose.position.z = 0.54832;
-  pose.orientation.x = 1;
-  pose.orientation.y = 0;
-  pose.orientation.z = 0.09;
-  pose.orientation.w = 0;
-  point_2.setPose(pose);
-
+#ifdef er7
   joint_values = {0, -20, 0, 0, -60, 0};
-  std::for_each(joint_values.begin(), joint_values.end(), [](double& value){value *= (M_PI/180);});
+#endif
+
+#ifdef er12
+  joint_values = {0, 20, 0, 0, 60, 0};
+#endif
+
+  std::for_each(joint_values.begin(), joint_values.end(), [](double &value){value *= (M_PI/180);});
   point_2.setJointValues(joint_values);
 
-  rpy ={180, -10, 0};
+  ap2cp(joint_values, pose, rpy);
+  tf::poseTFToMsg(pose,msg);
+  point_2.setPose(msg);
+
   std::for_each(rpy.begin(), rpy.end(), [](double &value){value *= (M_PI/180);});
   point_2.setRPY(rpy);
 
   motion_request_data_.push_back(point_2);
 
-
   //point3
   rtp_gui::MotionRequestData point_3("point3", rtp_gui::Line, 0.4);
-
-  pose.position.x = 0.51567;
-  pose.position.y = -0.20834;
-  pose.position.z = 0.64029;
-  pose.orientation.x = 0.97;
-  pose.orientation.y = 0.02;
-  pose.orientation.z = 0.21;
-  pose.orientation.w = 0.09;
-  point_3.setPose(pose);
-
+#ifdef er7
   joint_values = {-22, -24, 20, 0, -60, -24};
-  std::for_each(joint_values.begin(), joint_values.end(), [](double& value){value *= (M_PI/180);});
+#endif
+
+#ifdef er12
+  joint_values = {22, 24, -20, 0, 60, 24};
+#endif
+
+  std::for_each(joint_values.begin(), joint_values.end(), [](double &value){value *= (M_PI/180);});
   point_3.setJointValues(joint_values);
 
-  rpy ={168.78, -23.61,  4.35};
+  ap2cp(joint_values, pose, rpy);
+  tf::poseTFToMsg(pose,msg);
+  point_3.setPose(msg);
+
   std::for_each(rpy.begin(), rpy.end(), [](double &value){value *= (M_PI/180);});
   point_3.setRPY(rpy);
 
   motion_request_data_.push_back(point_3);
 
-
   //point4
   rtp_gui::MotionRequestData point_4("point4", rtp_gui::PTP, 0.4);
 
-  pose.position.x = 0.46700;
-  pose.position.y = 0;
-  pose.position.z = 0.76850;
-  pose.orientation.x = 0.71;
-  pose.orientation.y = 0.00;
-  pose.orientation.z = 0.71;
-  pose.orientation.w = -0.00;
-  point_4.setPose(pose);
-
+#ifdef er7
   joint_values = {0, 0, 0, 0, 0, 0};
-  std::for_each(joint_values.begin(), joint_values.end(), [](double& value){value *= (M_PI/180);});
+#endif
+
+#ifdef er12
+  joint_values = {0, 0, 0, 0, 0, 0};
+#endif
+
+  std::for_each(joint_values.begin(), joint_values.end(), [](double &value){value *= (M_PI/180);});
   point_4.setJointValues(joint_values);
 
-  rpy ={135.00, -90.00, 45.00};
+  ap2cp(joint_values, pose, rpy);
+  tf::poseTFToMsg(pose,msg);
+  point_4.setPose(msg);
+
   std::for_each(rpy.begin(), rpy.end(), [](double &value){value *= (M_PI/180);});
   point_4.setRPY(rpy);
 
@@ -609,7 +627,10 @@ void MainWindow::initPointList()
 void MainWindow::show_point_position(int point_id)
 {
   if (point_id > motion_request_data_.size())
+  {
+    ROS_INFO("point list number is less than 4");
     return;
+  }
 
   QString joint_values;
   joint_values += "J1:";
@@ -626,6 +647,7 @@ void MainWindow::show_point_position(int point_id)
   joint_values += QString::number(motion_request_data_[point_id-1].getJointValues()[5]*(180/M_PI), 10, 2);
   ui->lineedit_joint_values->setText(joint_values);
 
+
   double speed;
   speed = motion_request_data_[point_id-1].getSpeed();
   ui->lineedit_speed->setText(QString::number(speed*100, 10, 1));
@@ -637,12 +659,14 @@ void MainWindow::show_point_position(int point_id)
   cart_values += QString::number(motion_request_data_[point_id-1].getPose().position.y * 1000, 10, 2);
   cart_values += "  z:";
   cart_values += QString::number(motion_request_data_[point_id-1].getPose().position.z * 1000, 10, 2);
+
   cart_values += ";  R:";
   cart_values += QString::number(motion_request_data_[point_id-1].getRPY()[0] * (180/M_PI), 10, 2);
   cart_values += "  P:";
   cart_values += QString::number(motion_request_data_[point_id-1].getRPY()[1] * (180/M_PI), 10, 2);
   cart_values += "  Y:";
   cart_values += QString::number(motion_request_data_[point_id-1].getRPY()[2] * (180/M_PI), 10, 2);
+
   ui->lineedit_cart_values->setText(cart_values);
 }
 
@@ -877,5 +901,46 @@ void MainWindow::on_pb_movedown_clicked()
   if (!move_voice_control_client_.call(srv))
   {
     ROS_INFO("request failed");
+  }
+}
+
+bool MainWindow::ap2cp(const std::vector<double> &joint_values, tf::Pose &pose, std::vector<double> &rpy, const std::string &tool)
+{
+  robot_state::RobotStatePtr kinematic_state_ptr = group_->getCurrentState();
+  robot_state::RobotState kinematic_state = *kinematic_state_ptr;
+  const robot_state::JointModelGroup* joint_model_group = kinematic_state.getJointModelGroup(group_->getName());
+
+  kinematic_state.setJointGroupPositions(joint_model_group, joint_values);
+  const Eigen::Affine3d &end_effector_state = kinematic_state.getGlobalLinkTransform(tool);//default for tool0
+
+  //ap  --> xyz (xyzw)
+  tf::poseEigenToTF(end_effector_state,pose);
+
+  //ap  -->  rpy(degree)
+  double roll, pitch, yaw;
+  tf::Matrix3x3 mat(pose.getRotation());
+  mat.getRPY(roll, pitch, yaw);
+  roll *= (180/M_PI);
+  pitch *= (180/M_PI);
+  yaw *= (180/M_PI);
+
+  rpy.clear();
+  rpy.push_back(roll);
+  rpy.push_back(pitch);
+  rpy.push_back(yaw);
+
+  //matrix
+  //ROS_INFO_STREAM("Translation: \n" << end_effector_state.translation());
+  //ROS_INFO_STREAM("Rotation: \n" << end_effector_state.rotation());
+
+  return true;
+}
+
+void MainWindow::tab_bar_clicked(int index)
+{
+  //if click Tab : PointList
+  if ((index == 2) and (button_point_group_->checkedId() == 1))
+  {
+    show_point_position(1);
   }
 }

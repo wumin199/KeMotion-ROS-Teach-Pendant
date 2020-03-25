@@ -863,7 +863,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>0.00</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_17">
@@ -902,7 +902,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>0.00</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_19">
@@ -928,7 +928,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>0.00</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_20">
@@ -954,7 +954,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>0.00</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_21">
@@ -980,7 +980,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>0.00</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_22">
@@ -1006,7 +1006,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>0.00</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="lineedit_fk_xyzrpy">
@@ -1084,7 +1084,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>467.00</string>
+       <string>0.00</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_27">
@@ -1136,7 +1136,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>768.50</string>
+       <string>0</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="lineedit_ik1_qz">
@@ -1149,7 +1149,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>0.71</string>
+       <string>0</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_29">
@@ -1201,7 +1201,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>0.71</string>
+       <string>0</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_31">
@@ -1240,7 +1240,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>1</string>
       </property>
      </widget>
      <widget class="QPushButton" name="button_ik_2">
@@ -1266,7 +1266,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>467.00</string>
+       <string>0.00</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_33">
@@ -1409,7 +1409,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>768.50</string>
+       <string>0.00</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_25">

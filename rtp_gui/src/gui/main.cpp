@@ -29,7 +29,6 @@ int main(int argc, char **argv)
   MainWindow w;
   w.initMoveGroup(&move_group);
   w.show();
-
   return a.exec();
 
 }

@@ -93,42 +93,42 @@
 		<!-- joint list -->
 		<joint type="revolute" name="${prefix}joint_1">
 		  <origin xyz="0 0 0" rpy="0 0 0"/>
-		  <axis xyz="0 0 1"/>
+                  <axis xyz="0 0 -1"/>
 		  <parent link="${prefix}base_link"/>
 		  <child link="${prefix}link_1"/>
 		  <limit effort="0" lower="${j1_lower}" upper="${j1_upper}" velocity="${j1_speed}"/>
 		</joint>
 		<joint type="revolute" name="${prefix}joint_2">
 		  <origin xyz="${DH_L6} 0 ${DH_L1}" rpy="${M_PI/2} 0 0"/>
-		  <axis xyz="0 0 1"/>
+                  <axis xyz="0 0 -1"/>
 		  <parent link="${prefix}link_1"/>
 		  <child link="${prefix}link_2"/>
 		  <limit effort="0" lower="${j2_lower}" upper="${j2_upper}" velocity="${j2_speed}"/>
 		</joint>
 		<joint type="revolute" name="${prefix}joint_3">
 		  <origin xyz="0 ${DH_L2} 0" rpy="0 0 ${M_PI/2}"/>
-		  <axis xyz="0 0 1"/>
+                  <axis xyz="0 0 -1"/>
 		  <parent link="${prefix}link_2"/>
 		  <child link="${prefix}link_3"/>
 		  <limit effort="0" lower="${j3_lower}" upper="${j3_upper}" velocity="${j3_speed}"/>
 		</joint>
 		<joint type="revolute" name="${prefix}joint_4">
 		  <origin xyz="${DH_L3} 0 0" rpy="${M_PI/2} 0 0"/>
-		  <axis xyz="0 0 1"/>
+                  <axis xyz="0 0 -1"/>
 		  <parent link="${prefix}link_3"/>
 		  <child link="${prefix}link_4"/>
 		  <limit effort="0" lower="${j4_lower}" upper="${j4_upper}" velocity="${j4_speed}"/>
 		</joint>
 		<joint type="revolute" name="${prefix}joint_5">
 		  <origin xyz="0 0 ${DH_L4}" rpy="-${M_PI/2} 0 0"/>
-		  <axis xyz="0 0 1"/>
+                  <axis xyz="0 0 -1"/>
 		  <parent link="${prefix}link_4"/>
 		  <child link="${prefix}link_5"/>
 		  <limit effort="0" lower="${j5_lower}" upper="${j5_upper}" velocity="${j5_speed}"/>
 		</joint>
 		<joint type="revolute" name="${prefix}joint_6">
 		  <origin xyz="0 -${DH_L5} 0" rpy="${M_PI/2} 0 0"/>
-		  <axis xyz="0 0 1"/>
+                  <axis xyz="0 0 -1"/>
 		  <parent link="${prefix}link_5"/>
 		  <child link="${prefix}link_6"/>
 		  <limit effort="0" lower="${j6_lower}" upper="${j6_upper}" velocity="${j6_speed}"/>
